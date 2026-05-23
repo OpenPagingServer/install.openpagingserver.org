@@ -2,6 +2,7 @@
 $command = isset($_SERVER['HTTP_X_OPS_COMMAND']) ? $_SERVER['HTTP_X_OPS_COMMAND'] : '';
 $repoOwner = 'OpenPagingServer';
 $repoName = 'OpenPagingServer';
+$blockedRefs = array('0.1.0', '0.1.1');
 
 function ops_run_curl($url)
 {
@@ -23,7 +24,12 @@ function ops_run_curl($url)
     );
 }
 
-function ops_release_list($repoOwner, $repoName)
+function ops_ref_blocked($ref, $blockedRefs)
+{
+    return in_array($ref, $blockedRefs, true);
+}
+
+function ops_release_list($repoOwner, $repoName, $blockedRefs)
 {
     $url = "https://api.github.com/repos/$repoOwner/$repoName/tags?per_page=100";
     $result = ops_run_curl($url);
@@ -59,6 +65,10 @@ function ops_release_list($repoOwner, $repoName)
             continue;
         }
 
+        if (ops_ref_blocked($tag['name'], $blockedRefs)) {
+            continue;
+        }
+
         $items[] = array(
             'name' => $tag['name'],
             'ref' => $tag['name']
@@ -75,8 +85,12 @@ function ops_release_list($repoOwner, $repoName)
     exit;
 }
 
-function ops_ref_allowed($repoOwner, $repoName, $ref)
+function ops_ref_allowed($repoOwner, $repoName, $ref, $blockedRefs)
 {
+    if (ops_ref_blocked($ref, $blockedRefs)) {
+        return false;
+    }
+
     if ($ref === 'main') {
         return true;
     }
@@ -93,7 +107,7 @@ function ops_ref_allowed($repoOwner, $repoName, $ref)
     return is_array($data) && isset($data['ref']);
 }
 
-function ops_download_archive($repoOwner, $repoName)
+function ops_download_archive($repoOwner, $repoName, $blockedRefs)
 {
     $ref = isset($_GET['ref']) ? trim((string)$_GET['ref']) : '';
 
@@ -111,7 +125,7 @@ function ops_download_archive($repoOwner, $repoName)
         exit;
     }
 
-    if (!ops_ref_allowed($repoOwner, $repoName, $ref)) {
+    if (!ops_ref_allowed($repoOwner, $repoName, $ref, $blockedRefs)) {
         http_response_code(404);
         header('Content-Type: text/plain; charset=UTF-8');
         echo 'Ref not found';
@@ -133,11 +147,11 @@ function ops_download_archive($repoOwner, $repoName)
 }
 
 if ($command === 'releases') {
-    ops_release_list($repoOwner, $repoName);
+    ops_release_list($repoOwner, $repoName, $blockedRefs);
 }
 
 if ($command === 'download') {
-    ops_download_archive($repoOwner, $repoName);
+    ops_download_archive($repoOwner, $repoName, $blockedRefs);
 }
 
 $accept = isset($_SERVER['HTTP_ACCEPT']) ? $_SERVER['HTTP_ACCEPT'] : '';
