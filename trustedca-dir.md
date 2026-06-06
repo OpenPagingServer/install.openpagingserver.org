@@ -22,5 +22,10 @@
 
 > PROCEED AT YOUR OWN RISK!!!
 
-## Open Paging Server CA
-The offical CA for the Open Paging Server project will change from time to time. Software update should update the CA automatically. 
+## Open Paging Server Root CA
+The official root CA for the Open Paging Server project (OpenPagingServerProject.crt) will change from time to time. Software update should update the CA automatically. If it does not update, you can get the current one from https://install.openpagingserver.org/rootca.crt
+
+## Signing Requirement
+Open Paging Server always requires a plugin or endpoint module to be signed and trusted in order for it to load. 
+For security, there is NO WAY to officially bypass this requirement.
+The Open Paging Server Project also will not provide any kind of support for forks or user modified verisons of Open Paging Server.
