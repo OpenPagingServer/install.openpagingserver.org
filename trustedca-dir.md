@@ -23,4 +23,4 @@
 > PROCEED AT YOUR OWN RISK!!!
 
 ## Open Paging Server CA
-The Ope
+The offical CA for the Open Paging Server project will change from time to time. Software update should update the CA automatically. 
